@@ -1,16 +1,19 @@
-# user_manager.py
-import pandas as pd
-import os
-from datetime import datetime
+# test_user_manager.py
+from user_manager import UserManager
 
-class UserManager:
-    def __init__(self):
-        self.csv_path = 'data/users.csv'
-        self.ensure_csv_exists()
+# 테스트 실행
+user_mgr = UserManager()
 
-    def ensure_csv_exists(self):
-        """CSV 파일이 없으면 생성"""
-        if not os.path.exists(self.csv_path):
-            os.makedirs('data', exist_ok=True)
-            empty_df = pd.DataFrame(columns=['user_id', 'username', 'password', 'created_at'])
-            empty_df.to_csv(self.cs
+print("📊 현재 사용자 수:", user_mgr.get_user_count())
+
+# 회원가입 테스트
+success, message = user_mgr.create_user("테스트러", "test123")
+print("회원가입 결과:", message)
+
+# 로그인 테스트
+success, user_info = user_mgr.login_user("테스트러", "test123")
+if success:
+    print(f"✅ 로그인 성공: {user_info}")
+else:
+    print("❌ 로그인 실패")
+
