@@ -1,6 +1,6 @@
 # app.py (완전히 새로운 버전)
 import streamlit as st
-from auth import show_auth_page, logout_user
+from auth import Show_Page, logout_user
 from user_manager import UserManager
 
 # 페이지 설정
@@ -17,7 +17,7 @@ if 'logged_in' not in st.session_state:
 # 로그인 체크
 if not st.session_state.logged_in:
     # 로그인하지 않은 경우
-    show_auth_page()
+    Show_Page()
 
 else:
     # 로그인한 경우 - 메인 앱
