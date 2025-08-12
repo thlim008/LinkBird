@@ -2,17 +2,20 @@
 import streamlit as st
 from user_manager import UserManager
 
-def show_auth_page():
+def Show_Page():
     """로그인/회원가입 페이지"""
     st.title("🐦 프롬프트 트위터")
     st.markdown("**로그인이 필요합니다**")
 
     # 탭으로 로그인/회원가입 구분
-    tab1, tab2 = st.tabs(["🔑 로그인", "📝 회원가입"])
+    tab = st.radio("", ["🔑 로그인", "📝 회원가입"], horizontal=True)
 
-    user_mgr = UserManager()
+    Management = UserManager()
+    Login_Or_SignUp_Juction(tab, Management)
+    
 
-    with tab1:
+def Login_Or_SignUp_Juction(tab, Management):
+    if tab == "🔑 로그인":
         st.subheader("로그인")
 
         username = st.text_input("사용자명", key="login_username")
@@ -20,7 +23,7 @@ def show_auth_page():
 
         if st.button("로그인", type="primary"):
             if username and password:
-                success, user_info = user_mgr.login_user(username, password)
+                success, user_info = Management.login_user(username, password)
 
                 if success:
                     # Session State에 로그인 정보 저장
@@ -33,7 +36,7 @@ def show_auth_page():
             else:
                 st.warning("⚠️ 모든 필드를 입력해주세요.")
 
-    with tab2:
+    elif tab == "📝 회원가입":
         st.subheader("회원가입")
 
         new_username = st.text_input("사용자명", key="signup_username")
@@ -43,7 +46,7 @@ def show_auth_page():
         if st.button("회원가입", type="primary"):
             if new_username and new_password and confirm_password:
                 if new_password == confirm_password:
-                    success, message = user_mgr.create_user(new_username, new_password)
+                    success, message = Management.create_user(new_username, new_password)
 
                     if success:
                         st.success("🎉 " + message)
@@ -56,7 +59,7 @@ def show_auth_page():
                 st.warning("⚠️ 모든 필드를 입력해주세요.")
 
     # 현재 가입자 수 표시
-    st.sidebar.metric("📊 총 가입자 수", user_mgr.get_user_count())
+    st.sidebar.metric("📊 총 가입자 수", Management.get_user_count())
 
 def logout_user():
     """로그아웃 처리"""
