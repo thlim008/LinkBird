@@ -1,118 +1,154 @@
-# app.py (완전히 새로운 버전)
+# main_app.py
 import streamlit as st
-from auth import show_page, logout_user
+import html
+from auth import show_page, logout_user, post_fuc, show_post, show_following_posts, show_liked_posts, show_retweeted_posts, show_notifications, show_notification_settings
 from user_manager import UserManager
+from hotplace_auth import show_hotplace_map, show_add_hotplace
+# 🔥 이 부분을 추가하세요
+import folium
+from streamlit_folium import st_folium
 
-# 페이지 설정
-st.set_page_config(
-    page_title="프롬프트 트위터",
-    page_icon="🐦",
-    layout="wide"
-)
+st.set_page_config(page_title="프롬프트 트위터", page_icon="🐦", layout="wide")
 
-# Session State 초기화 (새 접속시 자동 로그아웃)
-if 'logged_in' not in st.session_state:
+# 초기 세션
+if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
 
-# 로그인 체크
+# 비로그인: 로그인/회원가입 페이지
 if not st.session_state.logged_in:
-    # 로그인하지 않은 경우
     show_page()
-
 else:
-    # 로그인한 경우 - 메인 앱
-    current_user = st.session_state.current_user
+    # 로그인된 상태
+    current_user = st.session_state.get("current_user", {})
+    user_id = current_user.get("user_id", "")
+    username = current_user.get("username", "")
 
     # 헤더
-    col1, col2 = st.columns([3, 1])
-    with col1:
+    left, center, right = st.columns([2, 1, 1])
+    with left:
         st.title("🐦 프롬프트 트위터")
-        st.markdown(f"**{current_user['username']}님 환영합니다!** ✨")
-    with col2:
+        st.markdown(f"**{username}님 환영합니다!**")
+
+    with center:
+        # 알림 카운터
+        um = UserManager()
+        unread_count = um.get_unread_count(user_id)
+        if unread_count > 0:
+            st.markdown(f"### 🔔 알림 {unread_count}개")
+        else:
+            st.markdown("### 🔔 알림")
+
+    with right:
         if st.button("🚪 로그아웃"):
             logout_user()
 
-    # 사이드바 메뉴
+    # 사이드바
     st.sidebar.title("📋 메뉴")
-    st.sidebar.markdown(f"👤 **{current_user['username']}**")
-    st.sidebar.markdown(f"🆔 {current_user['user_id']}")
+    st.sidebar.markdown(f"👤 **{username}**")
+    st.sidebar.markdown(f"🆔 {user_id}")
+
+    # 인기 해시태그 표시
+    st.sidebar.markdown("### 🔥 인기 해시태그")
+    try:
+        um = UserManager()
+        popular_hashtags = um.get_popular_hashtags(limit=10)
+        if popular_hashtags:
+            for tag, count in popular_hashtags:
+                st.sidebar.markdown(f"#{tag} ({count})")
+        else:
+            st.sidebar.caption("아직 해시태그가 없습니다.")
+    except Exception:
+        st.sidebar.caption("해시태그 로딩 중...")
 
     menu = st.sidebar.selectbox(
-        "페이지 선택",
-        ["🏠 홈", "✍️ 글쓰기", "👤 프로필", "📊 데이터 확인"]
+    "페이지 선택",
+    ["🏠 홈", "✍️ 게시물 작성", "👥 팔로잉 피드", "👍 좋아요 목록", "🔁 리트윗 목록", "🔔 알림", "⚙️ 알림 설정",  "🗺️ 핫플레이스 맵", "📍 핫플레이스 등록", "👤 프로필","📊 데이터 확인"]
     )
 
-    # 메인 콘텐츠
+    # --- 라우팅 ---
     if menu == "🏠 홈":
-        st.header("📝 최근 프롬프트")
+        show_post()
 
-        # 샘플 게시글 (3단계에서 실제 데이터로 교체)
-        st.info("💡 3단계에서 실제 게시글 기능이 구현됩니다!")
+    elif menu == "✍️ 게시물 작성":
+        post_fuc()
 
-        with st.container():
-            col1, col2 = st.columns([1, 10])
-            with col1:
-                st.image("https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=50&h=50&fit=crop&crop=face", width=50)
-            with col2:
-                st.markdown(f"**{current_user['username']}** • 방금 전")
-                st.markdown("로그인 시스템이 완성되었습니다! 🎉")
-                st.button("❤️ 0", key="sample_like")
+    elif menu == "👍 좋아요 목록":
+        show_liked_posts()
 
-    elif menu == "✍️ 글쓰기":
-        st.header("✍️ 새 프롬프트 작성")
-        st.info("💡 3단계에서 실제 글쓰기 기능이 구현됩니다!")
+    elif menu == "🔁 리트윗 목록":
+        show_retweeted_posts()
+    
+    # 라우팅 부분에 추가
+    elif menu == "👥 팔로잉 피드":
+        show_following_posts()
+    elif menu == "🔔 알림":
+        show_notifications()
 
-        content = st.text_area("프롬프트 내용", height=150)
-        if st.button("게시하기", type="primary"):
-            if content:
-                st.success("3단계에서 실제 저장 기능이 추가됩니다! 🎉")
-            else:
-                st.error("내용을 입력해주세요.")
+    elif menu == "⚙️ 알림 설정":
+        show_notification_settings()    
+        
+    elif menu == "🗺️ 핫플레이스 맵":
+        show_hotplace_map()
+
+    elif menu == "📍 핫플레이스 등록":
+        show_add_hotplace()
 
     elif menu == "👤 프로필":
         st.header("👤 내 프로필")
+        um = UserManager()
 
         col1, col2 = st.columns([1, 3])
         with col1:
             st.image("https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face", width=100)
-
         with col2:
-            st.markdown(f"### {current_user['username']}")
-            st.markdown(f"**사용자 ID:** {current_user['user_id']}")
-            st.markdown(f"**가입일:** {current_user['created_at']}")
+            st.markdown(f"### {username}")
+            st.markdown(f"**사용자 ID:** {user_id}")
+            st.markdown(f"**가입일:** {current_user.get('created_at','-')}")
 
         st.divider()
+        post_count = um.count_user_posts(user_id)
+        like_recv  = um.count_received_likes(user_id)  
+        following  = um.count_following(user_id)
+        followers  = um.count_followers(user_id)
 
-        # 활동 통계 (더미 데이터)
-        col1, col2, col3 = st.columns(3)
-        with col1:
-            st.metric("작성한 글", "0")
-        with col2:
-            st.metric("받은 좋아요", "0")
-        with col3:
-            st.metric("활동일", "1")
-
+        m1, m2, m3, m4 = st.columns(4)
+        with m1: st.metric("작성 글 수", post_count)
+        with m2: st.metric("받은 좋아요", like_recv)
+        with m3: st.metric("팔로잉", following)
+        with m4: st.metric("팔로워", followers)
+    
     elif menu == "📊 데이터 확인":
-        st.header("📊 저장된 데이터 확인")
+        st.header("📊 저장 데이터 (CSV)")
+        um = UserManager()
 
-        user_mgr = UserManager()
-        users_df = user_mgr.load_users()
-
-        st.subheader("👥 사용자 목록")
-
-        if len(users_df) > 0:
-            # 비밀번호 숨기기
-            display_df = users_df.copy()
-            display_df['password'] = '***'
-            st.dataframe(display_df, use_container_width=True)
-
-            # 간단한 통계
-            col1, col2 = st.columns(2)
-            with col1:
-                st.metric("총 사용자 수", len(users_df))
-            with col2:
-                today_users = len(users_df[users_df['created_at'] == current_user['created_at']])
-                st.metric("오늘 가입자", today_users)
+        st.subheader("👥 사용자")
+        users = um.load_users().copy()
+        if not users.empty:
+            users_disp = users.copy()
+            if "password" in users_disp.columns:
+                users_disp["password"] = "***"
+            st.dataframe(users_disp, use_container_width=True)
+            st.caption(f"총 사용자: {len(users)}")
         else:
-            st.warning("등록된 사용자가 없습니다.")
+            st.info("사용자가 없습니다.")
 
+        st.subheader("📝 게시물")
+        st.dataframe(um.load_posts(), use_container_width=True)
+
+        st.subheader("👍 게시물 좋아요")
+        st.dataframe(um.load_likes(), use_container_width=True)
+
+        st.subheader("🔁 리트윗")
+        st.dataframe(um.load_retweets(), use_container_width=True)
+
+        st.subheader("👥 팔로우")
+        st.dataframe(um.load_follows(), use_container_width=True)
+
+        st.subheader("💬 댓글")
+        st.dataframe(um.load_comments(), use_container_width=True)
+
+        st.subheader("👍 댓글 좋아요")
+        st.dataframe(um.load_comment_likes(), use_container_width=True)
+
+        st.subheader("🏷️ 해시태그")
+        st.dataframe(um.load_hashtags(), use_container_width=True)
