@@ -117,9 +117,9 @@ re                    # 정규표현식 (해시태그 추출)
 
 ## 🌐 배포 주소
 
-**Streamlit Cloud**: [여기에 배포 URL 추가 예정]
+**Streamlit Cloud**: https://limkyuhyun.streamlit.app/
 
-https://limkyuhyun.streamlit.app/
+
 
 ## 📁 프로젝트 구조
 
