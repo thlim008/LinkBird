@@ -1,2 +1,0 @@
-notification_id,user_id,type,from_user_id,post_id,comment_id,message,is_read,timestamp
-noti_001,user_002,comment_like,user_003,,comment_001,👍 zxc님이 회원님의 댓글을 좋아합니다,False,2025-08-14 10:08:54
