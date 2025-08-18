@@ -6,7 +6,7 @@ from user_manager import UserManager
 
 def show_page():
     """로그인/회원가입 페이지 (탭 UI)"""
-    st.title("🐦 프롬프트 트위터")
+    st.title("🐦 LinkBird")
     tab_login, tab_signup = st.tabs(["🔑 로그인", "📝 회원가입"])
     manager = UserManager()
 
