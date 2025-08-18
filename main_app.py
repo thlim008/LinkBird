@@ -8,7 +8,7 @@ from hotplace_auth import show_hotplace_map, show_add_hotplace
 import folium
 from streamlit_folium import st_folium
 
-st.set_page_config(page_title="프롬프트 트위터", page_icon="🐦", layout="wide")
+st.set_page_config(page_title="LinkBird", page_icon="🐦", layout="wide")
 
 # 초기 세션
 if "logged_in" not in st.session_state:
@@ -26,7 +26,7 @@ else:
     # 헤더
     left, center, right = st.columns([2, 1, 1])
     with left:
-        st.title("🐦 프롬프트 트위터")
+        st.title("🐦 LinkBird")
         st.markdown(f"**{username}님 환영합니다!**")
 
     with center:
