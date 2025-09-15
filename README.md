@@ -2,7 +2,7 @@ README.md
 
 ## 🌐 배포 주소
 
-**Streamlit Cloud**: https://limkyuhyun.streamlit.app/
+**Streamlit Cloud**: https://linkbird.streamlit.app/
 
 
 # 🐦 LinkBird
